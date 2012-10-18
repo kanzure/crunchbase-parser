@@ -5,12 +5,14 @@ This parser queries the Crunchbase API and downloads information about startups 
 
 Use
 =
-1) Install Python 2.X
-<br>2) Put download the parser into a folder of your choosing
-3) Create a text file called "api-key.txt" and put in your Crunchbase API string
-4) In the script, in search_phrase, enter a keyword that you'd like to search on. The value "analytics" is provided as the default
-5) Run the script
-6) When the script completes, a file called "JSON Parser output.csv" will be output into the script's directory
+<ol>
+<li>Install Python 2.X
+<li>Put download the parser into a folder of your choosing
+<li>Create a text file called "api-key.txt" and put in your Crunchbase API string
+<li>In the script, in search_phrase, enter a keyword that you'd like to search on. The value "analytics" is provided as the default
+<li>Run the script
+<li>When the script completes, a file called "JSON Parser output.csv" will be output into the script's directory
+</ol>
 
 Contact
 =
