@@ -8,7 +8,7 @@ from datetime import timedelta
 from datetime import datetime
 
 ## SET THE SEARCH PHRASE HERE ##
-search_phrase = "big data"
+search_phrase = "'big data'"
 
 
 
@@ -111,8 +111,11 @@ for i in range(iter):
                         if p is not None:
                             permalinks.append(p.group(1))
 
+
+# Uncomment for testing purposes
 #permalinks = []
-#permalinks.insert(0,"customersat")
+#permalinks.insert(0,"gatim-language-services")
+
 
 # Process each permalink separately
 for page in permalinks:
@@ -369,11 +372,16 @@ w = open(outfile, 'wb')
 writer = csv.writer(w)
 
 for r in finalResults:
-        writer.writerow(r)
-        w.flush  
+        try:
+                writer.writerow(r)
+        except UnicodeEncodeError:
+                print "UnicodeEncodeError"
+                writer.writerow("")
+                
+        w.flush
 w.close
 
-print "All set. " + str(len(finalResults)) + " records processed."
+print "All set. " + str(len(finalResults) - 1) + " record(s) processed."
 print
 print "Written to " + outfile
 i = raw_input('Press any key to close\n')
