@@ -126,7 +126,7 @@ permalinks = search(MasheryKey, search_phrase, 10, 1)
 
 # Process each permalink separately
 for page in permalinks:
-        print "Processing permalink: " + page
+        #print "Processing permalink: " + page
         l = retrieve(MasheryKey, page)
 
         for k in l.keys():
@@ -168,13 +168,22 @@ for page in permalinks:
 
                 if (k=="offices"):
 
-                        off = re.findall("u'description': u'(.*?)',", str(l[k]))
-                        st = re.findall("u'state_code': u'(.*?)',", str(l[k]))
-                        country = re.findall("u'country_code': u'(.*?)',", str(l[k]))
+			off = []
+			st = []
+			country = []
 
-                        HQ_types = ['HQ', "Main Office", "California Office", "InFact Group GmbH", "Seattle", "Auronix - Sillicon Valley", "Registered office", "Sewri Office", "Portland Office", "iWatchLife", "Houston", "101 W. Kirkwood Ave.", "Technical", "Boston Office", "Atlanta Office", "Main Office ", "Sales Office", "San Francisco Office", "Toronto Office", "NYC Office", "Kronos headquarters", "Business Development", "Recognia Inc.", "San Francisco", "Los Angeles Office", "World HQ", "Webvisionz", "OFFSITENOC Services", "USA HQ", "PERONii Solutions", "World Headquarter", "Corporate Headquarters:", "Corporate headquarters:", "San Jose Headquarters", "NewQuest - Paris", "San Francisco", "Main Office", "US Sales Office", "U.S. Headquarters", "3scale USA", "North American HQ", "Corporate Office 4CS ", "Operations HQ", "London, UK", "Interactive Buzz, LLC.", "ISACGlobal, US", "Office", "TimeWave Media Vermont", "European HQ", "US Office", "ClickFuel", "USA Head office", "London Office", "SiteWit Headquarter", "Head office", "Direct Partners", "Jivox US Headquarters", "Offices", "iKen Solutions - India", "Kronos headquarters", "WORLDWIDE HEADQUARTERS", "Corporate Office 4CS", "Grupa Nokaut HQ", "Miami Headquarter", "Worldwide Headquarters", "Boston HQ Office", "Terapeak HQ", "European Headquarters", "Next Big Sound HQ", "Paris HQ Office", "IIH Nordic Headquarters", "Suzerein Solutions HQ", "Argyle HQ", "Amsterdam HQ", "Birst Headquarters", "Sales Headquarters", "San Francisco HQ", "Asia-Pacific HQ", "Raleigh-Durham HQ", "UserReport.com, Inc. (HQ)", "Crowdbooster HQ", "Global Headquarters", "TOA Technologies - US ", "EzineArticles.com HQ", "Paris HQ", "ReachForce HQ", "Main Headquarters", "US Headquarters", "North America HQ", "USA Headquarters", "Home Office", "French Headquarters", "Sweden (HQ)", "Tampa HQ", "Board HQ", "Australian HQ", "Xpandion HQ", "London HQ", "Global HQ", "Social Apps HQ", "Richmond (HQ)", "US HQ", "Company Headquarters", "USA Marketing Unit", "US Address", "Main office", "Palo Alto HQ", "Corporate Office", u"HQ", u'Head Office', u'Headquarters', u'Headquarter', 'New York Office', u'Head Office', u'Flurry San Francisco', u'Corporate Headquarters', 'Corporate HQ', u'CORPORATE OFFICE', u'World Headquarters', 'Headquarters', 'Operations Office', 'USA - San Francisco - HQ', 'USA Headquarters- NYC', "New York", ]
+                        for items in l[k]:
+				off.append(items['description'])
+				st.append(items['state_code'])
+				country.append(items['country_code'])
 
-                        numberOfOffices = len(off)
+			#off = re.findall("u'description': u'(.*?)',", str(l[k]))
+                        #st = re.findall("u'state_code': u'(.*?)',", str(l[k]))
+                        #country = re.findall("u'country_code': u'(.*?)',", str(l[k]))
+
+                        HQ_types = ['HQ', 'Admeld NYC (HQ)', 'Headquarters (US)', 'HQ USA', 'H-FARM USA', 'StepOut HQ', 'HQ / USA', 'Seattle East (HQ)', 'HQ Los Angeles', 'MyBuys HQ', 'Google Headquarters', 'Global HQ', 'Corporate Headquarters', "Main Office", "California Office", "InFact Group GmbH", "Seattle", "Auronix - Sillicon Valley", "Registered office", "Sewri Office", "Portland Office", "iWatchLife", "Houston", "101 W. Kirkwood Ave.", "Technical", "Boston Office", "Atlanta Office", "Main Office ", "Sales Office", "San Francisco Office", "Toronto Office", "NYC Office", "Kronos headquarters", "Business Development", "Recognia Inc.", "San Francisco", "Los Angeles Office", "World HQ", "Webvisionz", "OFFSITENOC Services", "USA HQ", "PERONii Solutions", "World Headquarter", "Corporate Headquarters:", "Corporate headquarters:", "San Jose Headquarters", "NewQuest - Paris", "San Francisco", "Main Office", "US Sales Office", "U.S. Headquarters", "3scale USA", "North American HQ", "Corporate Office 4CS ", "Operations HQ", "London, UK", "Interactive Buzz, LLC.", "ISACGlobal, US", "Office", "TimeWave Media Vermont", "European HQ", "US Office", "ClickFuel", "USA Head office", "London Office", "SiteWit Headquarter", "Head office", "Direct Partners", "Jivox US Headquarters", "Offices", "iKen Solutions - India", "Kronos headquarters", "WORLDWIDE HEADQUARTERS", "Corporate Office 4CS", "Grupa Nokaut HQ", "Miami Headquarter", "Worldwide Headquarters", "Boston HQ Office", "Terapeak HQ", "European Headquarters", "Next Big Sound HQ", "Paris HQ Office", "IIH Nordic Headquarters", "Suzerein Solutions HQ", "Argyle HQ", "Amsterdam HQ", "Birst Headquarters", "Sales Headquarters", "San Francisco HQ", "Asia-Pacific HQ", "Raleigh-Durham HQ", "UserReport.com, Inc. (HQ)", "Crowdbooster HQ", "Global Headquarters", "TOA Technologies - US ", "EzineArticles.com HQ", "Paris HQ", "ReachForce HQ", "Main Headquarters", "US Headquarters", "North America HQ", "USA Headquarters", "Home Office", "French Headquarters", "Sweden (HQ)", "Tampa HQ", "Board HQ", "Australian HQ", "Xpandion HQ", "London HQ", "Global HQ", "Social Apps HQ", "Richmond (HQ)", "US HQ", "Company Headquarters", "USA Marketing Unit", "US Address", "Main office", "Palo Alto HQ", "Corporate Office", u"HQ", u'Head Office', u'Headquarters', u'Headquarter', 'New York Office', u'Head Office', u'Flurry San Francisco', u'Corporate Headquarters', 'Corporate HQ', u'CORPORATE OFFICE', u'World Headquarters', 'Headquarters', 'Operations Office', 'USA - San Francisco - HQ', 'USA Headquarters- NYC', 'BTBM HQ', 'SF HQ', 'Administrative HQ', 'InfoReach Inc. (HQ)']
+
+                        numberOfOffices = len(l[k])
                         
                         if numberOfOffices == 0:
                                 off.insert(0,"HQ")
@@ -187,33 +196,37 @@ for page in permalinks:
                         if(numberOfOffices == 0):
                                 states.append("")
                                 foundHQ = 1
-                                print "No offices. appending nothing"
+                                #print "No offices. appending nothing"
 
                         for o in range(numberOfOffices):
-                                if(off[o] != "None" and st[o] != "None"):        
-                                        if(numberOfOffices > 1 and off[o] in HQ_types):
+                                if(off[o] is not None and st[o] is not None):
+					office_candidate = off[o].rstrip().lstrip()
+
+                                        if(numberOfOffices > 1 and office_candidate in HQ_types):
                                                 states.append(st[o])
                                                 countries.append(country[o])
                                                 foundHQ = 1
-                                                print "Have HQ. appending " + st[o]
+                                                #print "Have HQ. appending " + st[o]
                                                 break
                                         
                                         elif (numberOfOffices == 1):
                                                 states.append(st[o])
                                                 countries.append(country[o])
                                                 foundHQ = 1
-                                                print "One office. appending " + st[o]
+                                                #print "One office. appending " + st[o]
                                                 break
 
                                         elif (o == numberOfOffices):
                                                 states.append(st[o])
                                                 countries.append(country[o])
                                                 foundHQ = 1
-                                                print "No HQ and >1 office. appending " + st[o]
+                                                #print "No HQ and >1 office. appending " + st[o]
 
-                        if (foundHQ == 0 and off[0] != ""):
-                                # Print any offices that may potentially be HQs
-                                print page
+                        if (foundHQ == 0 and l[k][0]['description'] is not None):
+                                # Print any offices that may potentially be HQs, where we know the state
+				for item in l[k]:
+					if (item['description'] is not None and item['description'] <> "" and item['state_code'] is not None):
+		                                print item['description'].encode('ascii', 'ignore'), " for ", page
 
                         if (foundHQ == 0):
                                 # No HQ found
