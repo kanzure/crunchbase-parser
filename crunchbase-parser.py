@@ -1,29 +1,31 @@
 import urllib
-import json
+import simplejson as json
 from pprint import pprint
 import re
 import math
 import csv
 from datetime import timedelta
 from datetime import datetime
+import requests
 
-## SET THE SEARCH PHRASE HERE ##
-search_phrase = "'big data'"
-
-
-
+# Set a search phrase
+# If empty, the tool will download all companies
+#search_phrase = "'big data'"
+search_phrase = ""
 
 # Set other settings
-fundedDateLimit = timedelta(days=183) # i.e. within 6 months
+fundedDateLimit = timedelta(days=365) # i.e. within 1 year
 acquiredDateLimit = timedelta(days=365) # i.e. over a year ago
 SEARCH_BASE = 'http://api.crunchbase.com/v/1/search.js?'
 RETRIEVE_BASE = 'http://api.crunchbase.com/v/1/company/'
+ALL_COMPANIES_ENDPOINT = 'http://api.crunchbase.com/v/1/companies.js'
 outfile = r'JSON Parser output.csv'
 keyfile = r'api_key.txt'
 
+
 # Pull the API key from a file
 f = open(keyfile)
-MasheryKey = f.read()
+MasheryKey = f.read().lstrip().rstrip()
 f.close()
 
 # Initialize values
@@ -46,25 +48,62 @@ total = 0
 results = 10
 start = 1
 
-def search(api_key, query, results, start, **kwargs):
-        kwargs.update({
-            'query': query,
-            'page': start,
-            'api_key': api_key
-        })    
+def search_with_query(api_key, query, results, start, **kwargs):
+	kwargs.update({
+		'query': query,
+	        'page': start,
+	        'api_key': api_key
+	})    
 
-        url = SEARCH_BASE + urllib.urlencode(kwargs)
-        # print url
+	url = SEARCH_BASE + urllib.urlencode(kwargs)
+	# print url
 
-        try:
-                result = json.load(urllib.urlopen(url))
-        except ValueError:
+	try:
+	        result = json.load(urllib.urlopen(url))
+	except ValueError:
                 # Skip any pages where the HTML generates error
-                print "ValueError in search"
-                return dict('')
+	        print "ValueError in search"
+	        return dict('')
 
-        return result
-        
+	return result
+
+	
+def search(api_key, query, results, start, **kwargs):
+	if (query <> ""):
+		result = search_with_query(MasheryKey, search_phrase, 10, 1) 
+		total = result["total"]
+		iter = int(math.ceil(total/10))
+		print "Will iterate " + str(iter) + " times"
+
+		for i in range(iter):
+		    i += 1
+    
+		    # Iterate i times, where i is pages in the search results
+		    print "Page " + str(i)
+		    j = search_with_query(MasheryKey, search_phrase, 10, i)
+
+		    for k in j.keys():
+		        if (k=="results"):
+            
+		            for r in j[k]:
+		                n = re.search("u'namespace': u'(.*?)'", str(r))
+		                # Only match companies, not products or people
+                		if n.group(1)=="company":
+		                        p = re.search("u'permalink': u'(.*?)',", str(r))
+		                        if p is not None:
+		                            permalinks.append(p.group(1))
+
+	else:
+		p = {'api_key': api_key}
+		r = requests.get(ALL_COMPANIES_ENDPOINT, params=p)
+		links = r.json()
+
+		for link in links:
+			permalinks.append(link['permalink'])
+
+	return permalinks
+
+
 def retrieve(api_key, company, **kwargs):
         url = RETRIEVE_BASE + company + ".js?" + "api_key=" + api_key
 
@@ -78,39 +117,7 @@ def retrieve(api_key, company, **kwargs):
         
         return result
 
-        
-j = search(MasheryKey, search_phrase, 10, 1)
-
-for k in j.keys():
-    if (k=="total"):
-        total = j[k]
-        # Get total number of fields
-
-
-iter = int(math.ceil(total/10))
-#iter = 2  # run only 2 iterations for testing purposes only
-
-print "Will iterate " + str(iter) + " times"
-
-for i in range(iter):
-    i += 1
-    
-    # Iterate i times, where i is pages in the search results
-    print "Page " + str(i)
-    j = search(MasheryKey, search_phrase, 10, i)
-
-
-    for k in j.keys():
-        if (k=="results"):
-            
-            for r in j[k]:
-                n = re.search("u'namespace': u'(.*?)'", str(r))
-                # Only match companies, not products or people
-                if n.group(1)=="company":
-                        p = re.search("u'permalink': u'(.*?)',", str(r))
-                        if p is not None:
-                            permalinks.append(p.group(1))
-
+permalinks = search(MasheryKey, search_phrase, 10, 1)
 
 # Uncomment for testing purposes
 #permalinks = []
@@ -283,7 +290,7 @@ for page in permalinks:
                         if (l[k] is None):
                                 acquired_amount.append("")
                         else:
-                                if (aa.group(1) == "None"):
+                                if (aa is None or aa.group(1) == "None"):
                                         acquired_amount.append("Price Not Known") # Acquired but price unknown
                                 else:
                                         acquired_amount.append(aa.group(1))
@@ -385,5 +392,3 @@ print "All set. " + str(len(finalResults) - 1) + " record(s) processed."
 print
 print "Written to " + outfile
 i = raw_input('Press any key to close\n')
-
-exit
