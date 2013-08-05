@@ -55,7 +55,7 @@ def search_with_query(api_key, query, results, start, **kwargs):
 
 	return result
 
-	
+
 def search(api_key, query, results, start, **kwargs):
 	permalinks = []
 
@@ -121,7 +121,7 @@ permalinks = search(MasheryKey, search_phrase, 10, 1)
 for page in permalinks:
 	if (cbase.find( {"permalink": page} ).count() != 0):
 		# Already exists in Mongo: skip processing
-		continue		
+		continue
 
         #print "Processing permalink: " + page
         l = retrieve(MasheryKey, page)
@@ -326,9 +326,9 @@ for page in permalinks:
 			"funded_last_date": funded_last_date,
 			"aqcuired_date": acquired_date
 		}]
-		
-		insert_id = cbase.insert(cbase_entry)	
-		#print "inserted: ", page	
+
+		insert_id = cbase.insert(cbase_entry)
+		#print "inserted: ", page
 
 
 #print "Ready to write"
