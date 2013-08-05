@@ -41,7 +41,7 @@ def search_with_query(api_key, query, results, start, **kwargs):
 		'query': query,
 	        'page': start,
 	        'api_key': api_key
-	})    
+	})
 
 	url = SEARCH_BASE + urllib.urlencode(kwargs)
 	# print url
@@ -55,26 +55,26 @@ def search_with_query(api_key, query, results, start, **kwargs):
 
 	return result
 
-	
+
 def search(api_key, query, results, start, **kwargs):
 	permalinks = []
 
 	if (query <> ""):
-		result = search_with_query(MasheryKey, search_phrase, 10, 1) 
+		result = search_with_query(MasheryKey, search_phrase, 10, 1)
 		total = result["total"]
 		iter = int(math.ceil(total/10))
 		print "Will iterate " + str(iter) + " times"
 
 		for i in range(iter):
 		    i += 1
-    
+
 		    # Iterate i times, where i is pages in the search results
 		    print "Page " + str(i)
 		    j = search_with_query(MasheryKey, search_phrase, 10, i)
 
 		    for k in j.keys():
 		        if (k=="results"):
-            
+
 		            for r in j[k]:
 		                n = re.search("u'namespace': u'(.*?)'", str(r))
 		                # Only match companies, not products or people
@@ -107,7 +107,7 @@ def retrieve(api_key, company, **kwargs):
 	except IOError:
 		print "IOError in retrieval"
                 return {"error" : "error"}
- 
+
         return result
 
 permalinks = search(MasheryKey, search_phrase, 10, 1)
@@ -121,7 +121,7 @@ permalinks = search(MasheryKey, search_phrase, 10, 1)
 for page in permalinks:
 	if (cbase.find( {"permalink": page} ).count() != 0):
 		# Already exists in Mongo: skip processing
-		continue		
+		continue
 
         #print "Processing permalink: " + page
         l = retrieve(MasheryKey, page)
@@ -152,7 +152,7 @@ for page in permalinks:
                         if (l[k] is not None):
                                 enc = l[k].encode('ascii', 'ignore')
                         names = enc
-                
+
                 if (k=="homepage_url"):
                         homepages = l[k]
 
@@ -180,7 +180,7 @@ for page in permalinks:
                         HQ_types = ['HQ', 'Admeld NYC (HQ)', 'Headquarters (US)', 'HQ USA', 'H-FARM USA', 'StepOut HQ', 'HQ / USA', 'Seattle East (HQ)', 'HQ Los Angeles', 'MyBuys HQ', 'Google Headquarters', 'Global HQ', 'Corporate Headquarters', "Main Office", "California Office", "InFact Group GmbH", "Seattle", "Auronix - Sillicon Valley", "Registered office", "Sewri Office", "Portland Office", "iWatchLife", "Houston", "101 W. Kirkwood Ave.", "Technical", "Boston Office", "Atlanta Office", "Main Office ", "Sales Office", "San Francisco Office", "Toronto Office", "NYC Office", "Kronos headquarters", "Business Development", "Recognia Inc.", "San Francisco", "Los Angeles Office", "World HQ", "Webvisionz", "OFFSITENOC Services", "USA HQ", "PERONii Solutions", "World Headquarter", "Corporate Headquarters:", "Corporate headquarters:", "San Jose Headquarters", "NewQuest - Paris", "San Francisco", "Main Office", "US Sales Office", "U.S. Headquarters", "3scale USA", "North American HQ", "Corporate Office 4CS ", "Operations HQ", "London, UK", "Interactive Buzz, LLC.", "ISACGlobal, US", "Office", "TimeWave Media Vermont", "European HQ", "US Office", "ClickFuel", "USA Head office", "London Office", "SiteWit Headquarter", "Head office", "Direct Partners", "Jivox US Headquarters", "Offices", "iKen Solutions - India", "Kronos headquarters", "WORLDWIDE HEADQUARTERS", "Corporate Office 4CS", "Grupa Nokaut HQ", "Miami Headquarter", "Worldwide Headquarters", "Boston HQ Office", "Terapeak HQ", "European Headquarters", "Next Big Sound HQ", "Paris HQ Office", "IIH Nordic Headquarters", "Suzerein Solutions HQ", "Argyle HQ", "Amsterdam HQ", "Birst Headquarters", "Sales Headquarters", "San Francisco HQ", "Asia-Pacific HQ", "Raleigh-Durham HQ", "UserReport.com, Inc. (HQ)", "Crowdbooster HQ", "Global Headquarters", "TOA Technologies - US ", "EzineArticles.com HQ", "Paris HQ", "ReachForce HQ", "Main Headquarters", "US Headquarters", "North America HQ", "USA Headquarters", "Home Office", "French Headquarters", "Sweden (HQ)", "Tampa HQ", "Board HQ", "Australian HQ", "Xpandion HQ", "London HQ", "Global HQ", "Social Apps HQ", "Richmond (HQ)", "US HQ", "Company Headquarters", "USA Marketing Unit", "US Address", "Main office", "Palo Alto HQ", "Corporate Office", u"HQ", u'Head Office', u'Headquarters', u'Headquarter', 'New York Office', u'Head Office', u'Flurry San Francisco', u'Corporate Headquarters', 'Corporate HQ', u'CORPORATE OFFICE', u'World Headquarters', 'Headquarters', 'Operations Office', 'USA - San Francisco - HQ', 'USA Headquarters- NYC', 'BTBM HQ', 'SF HQ', 'Administrative HQ', 'InfoReach Inc. (HQ)']
 
                         numberOfOffices = len(l[k])
-                        
+
                         if numberOfOffices == 0:
                                 off.insert(0,"HQ")
 
@@ -188,7 +188,7 @@ for page in permalinks:
                                 st.insert(0,"")
 
                         foundHQ = 0
-                           
+
                         if(numberOfOffices == 0):
                                 states = ""
                                 foundHQ = 1
@@ -204,7 +204,7 @@ for page in permalinks:
                                                 foundHQ = 1
                                                 #print "Have HQ. appending " + st[o]
                                                 break
-                                        
+
                                         elif (numberOfOffices == 1):
                                                 states = st[o]
                                                 countries = country[o]
@@ -228,7 +228,7 @@ for page in permalinks:
                                 # No HQ found
                                 states = ""
                                 countries = ""
-                                                
+
                 if (k=="number_of_employees"):
                         employees = l[k]
 
@@ -262,9 +262,9 @@ for page in permalinks:
                         for a in range(len(fy)):
                                 if (fd[a] == "None"):
                                         fd[a] = 1
-        
+
                                 if (fy[a] != "None" and fm[a] != "None"):
-                                        currentDate = datetime(int(fy[a]), int(fm[a]), int(fd[a]))                             
+                                        currentDate = datetime(int(fy[a]), int(fm[a]), int(fd[a]))
                                         if (latestDate < currentDate) or (latestDate==datetime(1,1,1)):
                                                 latestDate = currentDate
 
@@ -277,7 +277,7 @@ for page in permalinks:
                                 funded_last_date = ""
 
                         funded_amount = totalFunded
-        
+
 
                 if (k=="acquisition"):
                         aa = re.search("u'price_amount': (.*?),", str(l[k]))
@@ -292,10 +292,10 @@ for page in permalinks:
                                         ad[a] = 1
 
                                 if (ay[a] != "None" and am[a] != "None"):
-                                        currentDate = datetime(int(ay[a]), int(am[a]), int(ad[a]))                        
+                                        currentDate = datetime(int(ay[a]), int(am[a]), int(ad[a]))
                                         if (latestDate < currentDate) or (latestDate==datetime(1,1,1)):
                                                 latestDate = currentDate
-           
+
                         if (l[k] is None):
                                 acquired_amount = ""
                         else:
@@ -303,7 +303,7 @@ for page in permalinks:
                                         acquired_amount = "Price Not Known" # Acquired but price unknown
                                 else:
                                         acquired_amount = aa.group(1)
-                                        
+
 
                         if latestDate != datetime(1,1,1):
                                 acquired_date = latestDate.strftime("%m-%d-%y")
@@ -326,9 +326,9 @@ for page in permalinks:
 			"funded_last_date": funded_last_date,
 			"aqcuired_date": acquired_date
 		}]
-		
-		insert_id = cbase.insert(cbase_entry)	
-		#print "inserted: ", page	
+
+		insert_id = cbase.insert(cbase_entry)
+		#print "inserted: ", page
 
 
 #print "Ready to write"
@@ -344,7 +344,7 @@ for page in permalinks:
 #print "Last Funding Date " + str(len(funded_last_date))
 #print "Acquired For " + str(len(acquired_amount))
 #print "Acquired Date " + str(len(acquired_date))
-                                                
+
 
 #beforeFilter = zip(names, homepages, founded_years, employees, phone_numbers, states, countries, descriptions, funded_amount, funded_last_date, acquired_amount, acquired_date)
 
@@ -377,7 +377,7 @@ for item in range(numberOfCompanies):
 
         if (c[7] != ""):
                 fundingDate = datetime.strptime(c[7], "%m-%d-%y")
-        
+
         # Company was funded in last 6 months
         if (fundingDate == datetime(1,1,1)) or (fundingDate > (datetime.today() - fundedDateLimit)):
                 fundedTimeFilter = 1
@@ -387,7 +387,7 @@ for item in range(numberOfCompanies):
         # Company was acquired over a year ago
         if (c[9] != "" and c[9] != "Price Not Known"):
                 acquiredDate = datetime.strptime(c[9], "%m-%d-%y")
-        
+
         if (acquiredDate == datetime(1,1,1)) or (acquiredDate < (datetime.today() - acquiredDateLimit)):
                 acquiredTimeFilter = 1
 
@@ -395,7 +395,7 @@ for item in range(numberOfCompanies):
         if employeeFilter == 1 and (fundedDateFilter == 1 or acquiredTimeFilter == 1):
                 finalResults.append(c)
 
-"""     
+"""
 
 
 
@@ -413,7 +413,7 @@ for item in range(numberOfCompanies):
 #        except UnicodeEncodeError:
 #                print "UnicodeEncodeError"
 #                writer.writerow("")
-                
+
 #        w.flush
 #w.close
 
