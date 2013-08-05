@@ -7,6 +7,7 @@ import csv
 from datetime import timedelta
 from datetime import datetime
 import requests
+from pymongo import MongoClient
 
 # Set a search phrase
 # If empty, the tool will download all companies
@@ -22,6 +23,8 @@ ALL_COMPANIES_ENDPOINT = 'http://api.crunchbase.com/v/1/companies.js'
 outfile = r'JSON Parser output.csv'
 keyfile = r'api_key.txt'
 
+# Connect to MongoDB
+cbase = MongoClient().cbase.crunchbase_db
 
 # Pull the API key from a file
 f = open(keyfile)
@@ -29,21 +32,6 @@ MasheryKey = f.read().lstrip().rstrip()
 f.close()
 
 # Initialize values
-names = []
-permalinks = []
-crunchbase_urls = []
-homepages = []
-founded_years = []
-phone_numbers = []
-states = []
-countries = []
-descriptions = []
-employees = []
-acquired_amount = []
-funded_amount = []
-funded_last_date = []
-acquired_date = []
-names = []
 total = 0
 results = 10
 start = 1
@@ -69,6 +57,8 @@ def search_with_query(api_key, query, results, start, **kwargs):
 
 	
 def search(api_key, query, results, start, **kwargs):
+	permalinks = []
+
 	if (query <> ""):
 		result = search_with_query(MasheryKey, search_phrase, 10, 1) 
 		total = result["total"]
@@ -114,7 +104,10 @@ def retrieve(api_key, company, **kwargs):
                 # Skip any retreivals
                 print "ValueError in retrieval"
                 return {"error" : "error"}
-        
+	except IOError:
+		print "IOError in retrieval"
+                return {"error" : "error"}
+ 
         return result
 
 permalinks = search(MasheryKey, search_phrase, 10, 1)
@@ -126,11 +119,14 @@ permalinks = search(MasheryKey, search_phrase, 10, 1)
 
 # Process each permalink separately
 for page in permalinks:
+	if (cbase.find( {"permalink": page} ).count() != 0):
+		# Already exists in Mongo: skip processing
+		continue		
+
         #print "Processing permalink: " + page
         l = retrieve(MasheryKey, page)
 
         for k in l.keys():
-        
                 #print "Now processing " + k
 
                 if (k=="error"):
@@ -155,16 +151,16 @@ for page in permalinks:
 
                         if (l[k] is not None):
                                 enc = l[k].encode('ascii', 'ignore')
-                        names.append(enc)
+                        names = enc
                 
                 if (k=="homepage_url"):
-                        homepages.append(l[k])
+                        homepages = l[k]
 
                 if (k=="founded_year"):
-                        founded_years.append(l[k])
+                        founded_years = l[k]
 
                 if (k=="phone_number"):
-                        phone_numbers.append(l[k])
+                        phone_numbers = l[k]
 
                 if (k=="offices"):
 
@@ -194,7 +190,7 @@ for page in permalinks:
                         foundHQ = 0
                            
                         if(numberOfOffices == 0):
-                                states.append("")
+                                states = ""
                                 foundHQ = 1
                                 #print "No offices. appending nothing"
 
@@ -203,22 +199,22 @@ for page in permalinks:
 					office_candidate = off[o].rstrip().lstrip()
 
                                         if(numberOfOffices > 1 and office_candidate in HQ_types):
-                                                states.append(st[o])
-                                                countries.append(country[o])
+                                                states = st[o]
+                                                countries = country[o]
                                                 foundHQ = 1
                                                 #print "Have HQ. appending " + st[o]
                                                 break
                                         
                                         elif (numberOfOffices == 1):
-                                                states.append(st[o])
-                                                countries.append(country[o])
+                                                states = st[o]
+                                                countries = country[o]
                                                 foundHQ = 1
                                                 #print "One office. appending " + st[o]
                                                 break
 
                                         elif (o == numberOfOffices):
-                                                states.append(st[o])
-                                                countries.append(country[o])
+                                                states = st[o]
+                                                countries = country[o]
                                                 foundHQ = 1
                                                 #print "No HQ and >1 office. appending " + st[o]
 
@@ -230,11 +226,11 @@ for page in permalinks:
 
                         if (foundHQ == 0):
                                 # No HQ found
-                                states.append("")
-                                countries.append("")
+                                states = ""
+                                countries = ""
                                                 
                 if (k=="number_of_employees"):
-                        employees.append(l[k])
+                        employees = l[k]
 
                 if (k=="description"):
 
@@ -242,11 +238,11 @@ for page in permalinks:
 
                         if (l[k] is not None):
                                 enc = l[k].encode('ascii', 'ignore')
-                        descriptions.append(enc)
+                        descriptions = enc
 
                 if (k=="funding_rounds" and str(l[k]) == "[]"):
-                        funded_amount.append("")
-                        funded_last_date.append("")
+                        funded_amount = ""
+                        funded_last_date = ""
 
                 if (k=="funding_rounds" and str(l[k]) != "[]"):
                         totalFunded = 0
@@ -274,13 +270,13 @@ for page in permalinks:
 
                         if latestDate != datetime(1,1,1):
                                 try:
-                                        funded_last_date.append(latestDate.strftime("%m-%d-%y"))
+                                        funded_last_date = latestDate.strftime("%m-%d-%y")
                                 except ValueError:
-                                        funded_last_date.append("")
+                                        funded_last_date = ""
                         else:
-                                funded_last_date.append("")
+                                funded_last_date = ""
 
-                        funded_amount.append(totalFunded)
+                        funded_amount = totalFunded
         
 
                 if (k=="acquisition"):
@@ -301,39 +297,59 @@ for page in permalinks:
                                                 latestDate = currentDate
            
                         if (l[k] is None):
-                                acquired_amount.append("")
+                                acquired_amount = ""
                         else:
                                 if (aa is None or aa.group(1) == "None"):
-                                        acquired_amount.append("Price Not Known") # Acquired but price unknown
+                                        acquired_amount = "Price Not Known" # Acquired but price unknown
                                 else:
-                                        acquired_amount.append(aa.group(1))
+                                        acquired_amount = aa.group(1)
                                         
 
                         if latestDate != datetime(1,1,1):
-                                acquired_date.append(latestDate.strftime("%m-%d-%y"))
+                                acquired_date = latestDate.strftime("%m-%d-%y")
                         else:
-                                acquired_date.append("")
+                                acquired_date = ""
+
+	if (cbase.find( {"permalink": page} ).count() == 0):
+		cbase_entry = [{
+			"permalink": page,
+			"names": names,
+			"homepages": homepages,
+			"founded_years": founded_years,
+			"phone_numbers": phone_numbers,
+			"states": states,
+			"countries": countries,
+			"descriptions": descriptions,
+			"employees": employees,
+			"acquired_amount": acquired_amount,
+			"funded_amount": funded_amount,
+			"funded_last_date": funded_last_date,
+			"aqcuired_date": acquired_date
+		}]
+		
+		insert_id = cbase.insert(cbase_entry)	
+		#print "inserted: ", page	
 
 
-print "Ready to write"
-print "Name " + str(len(names))
-print "Homep " + str(len(homepages))
-print "Founded " + str(len(founded_years))
-print "Emply " + str(len(employees))
-print "Phone " + str(len(phone_numbers))
-print "State " + str(len(states))
-print "Country " + str(len(countries))
-print "Descr " + str(len(descriptions))
-print "Funded " + str(len(funded_amount))
-print "Last Funding Date " + str(len(funded_last_date))
-print "Acquired For " + str(len(acquired_amount))
-print "Acquired Date " + str(len(acquired_date))
+#print "Ready to write"
+#print "Name " + str(len(names))
+#print "Homep " + str(len(homepages))
+#print "Founded " + str(len(founded_years))
+#print "Emply " + str(len(employees))
+#print "Phone " + str(len(phone_numbers))
+#print "State " + str(len(states))
+#print "Country " + str(len(countries))
+#print "Descr " + str(len(descriptions))
+#print "Funded " + str(len(funded_amount))
+#print "Last Funding Date " + str(len(funded_last_date))
+#print "Acquired For " + str(len(acquired_amount))
+#print "Acquired Date " + str(len(acquired_date))
                                                 
 
-beforeFilter = zip(names, homepages, founded_years, employees, phone_numbers, states, countries, descriptions, funded_amount, funded_last_date, acquired_amount, acquired_date)
+#beforeFilter = zip(names, homepages, founded_years, employees, phone_numbers, states, countries, descriptions, funded_amount, funded_last_date, acquired_amount, acquired_date)
 
 
-finalResults = beforeFilter # Filter disabled for now
+#finalResults = beforeFilter # Filter disabled for now
 
 """
 
@@ -385,23 +401,23 @@ for item in range(numberOfCompanies):
 
 
 # Insert headers
-finalResults.insert(0,("Name", "Homepage", "Founded", "Employees", "Phone", "HQ State", "HQ Country", "Description", "Total VC Funding", "Last Funding Date", "Acquired For", "Acquired On"))
+#finalResults.insert(0,("Name", "Homepage", "Founded", "Employees", "Phone", "HQ State", "HQ Country", "Description", "Total VC Funding", "Last Funding Date", "Acquired For", "Acquired On"))
 
 
-w = open(outfile, 'wb')
-writer = csv.writer(w)
+#w = open(outfile, 'wb')
+#writer = csv.writer(w)
 
-for r in finalResults:
-        try:
-                writer.writerow(r)
-        except UnicodeEncodeError:
-                print "UnicodeEncodeError"
-                writer.writerow("")
+#for r in finalResults:
+#        try:
+#                writer.writerow(r)
+#        except UnicodeEncodeError:
+#                print "UnicodeEncodeError"
+#                writer.writerow("")
                 
-        w.flush
-w.close
+#        w.flush
+#w.close
 
-print "All set. " + str(len(finalResults) - 1) + " record(s) processed."
-print
-print "Written to " + outfile
+#print "All set. " + str(len(finalResults) - 1) + " record(s) processed.\n"
+#print
+#print "Written to " + outfile
 i = raw_input('Press any key to close\n')
